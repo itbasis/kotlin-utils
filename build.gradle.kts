@@ -20,7 +20,7 @@ import org.gradle.language.base.plugins.LifecycleBasePlugin.ASSEMBLE_TASK_NAME
 
 tasks.withType<Wrapper> {
 	distributionType = Wrapper.DistributionType.BIN
-	gradleVersion = "4.8"
+	gradleVersion = "4.8.1"
 }
 
 buildscript {
@@ -60,10 +60,12 @@ configure<BuildScanExtension> {
 	}
 }
 
-group = "ru.itbasis"
-version = file("versions.txt").readLines().first()
+version =
+	if (version != "unspecified") version else file("versions.txt").readLines().first().substringAfter(
+		"="
+	)
 
-allprojects {
+subprojects {
 	version = rootProject.version
 
 	apply {
@@ -158,24 +160,26 @@ configure<GithubReleaseExtension> {
 	if (hasProperty("githubToken")) setToken(findProperty("githubToken") as String)
 }
 
-val taskGenerateVersion = tasks.create("generateVersion").apply {
-	tasks[ASSEMBLE_TASK_NAME].dependsOn(this)
+tasks.create("generateVersion").apply {
+	group = LifecycleBasePlugin.BUILD_GROUP
+	tasks[ASSEMBLE_TASK_NAME].shouldRunAfter(this)
 	doLast {
 		version = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyyMMdd_HHmm"))
+		subprojects.forEach { it.version = version }
 		file("versions.txt").writeText("version=$version")
 	}
 }
 tasks[BUILD_TASK_NAME].apply {
-	dependsOn(taskGenerateVersion)
 	doLast {
 		subprojects.forEach { subProject ->
+			logger.lifecycle("subProject: '${subProject.group}:${subProject.name}:${subProject.version}'")
 			copy {
 				from("${subProject.buildDir}/libs")
 				into("$buildDir/libs")
 			}
 		}
-		tasks.withType(GithubReleaseTask::class.java) {
-			setReleaseAssets(buildDir.resolve("libs").listFiles())
-		}
 	}
+}
+tasks.withType(GithubReleaseTask::class.java) {
+	//  setReleaseAssets(buildDir.resolve("libs").listFiles())
 }

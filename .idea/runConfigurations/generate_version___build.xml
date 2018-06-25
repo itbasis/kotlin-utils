@@ -1,5 +1,5 @@
 <component name="ProjectRunConfigurationManager">
-  <configuration default="false" name="build" type="GradleRunConfiguration" factoryName="Gradle" singleton="true">
+  <configuration default="false" name="generate version &amp; build" type="GradleRunConfiguration" factoryName="Gradle" singleton="true">
     <ExternalSystemSettings>
       <option name="executionName" />
       <option name="externalProjectPath" value="$PROJECT_DIR$" />
@@ -12,6 +12,7 @@
         <list>
           <option value="clean" />
           <option value="build" />
+          <option value="generateVersion" />
         </list>
       </option>
       <option name="vmOptions" value="" />
