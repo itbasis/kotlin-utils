@@ -152,12 +152,12 @@ subprojects {
 		}
 	}
 
-	rootProject.tasks.withType(GithubReleaseTask::class.java) { dependsOn(tasks[BUILD_TASK_NAME]) }
 	rootProject.tasks[BUILD_TASK_NAME].shouldRunAfter(tasks[BUILD_TASK_NAME])
 }
 
 configure<GithubReleaseExtension> {
 	if (hasProperty("githubToken")) setToken(findProperty("githubToken") as String)
+	setOwner("itbasis")
 }
 
 tasks.create("generateVersion").apply {
