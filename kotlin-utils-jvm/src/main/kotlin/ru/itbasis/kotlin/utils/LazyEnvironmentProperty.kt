@@ -5,6 +5,7 @@ import klogging.KLoggers
 import klogging.WithLogging
 import kotlin.properties.ReadWriteProperty
 import kotlin.reflect.KProperty
+import kotlin.reflect.jvm.jvmErasure
 
 /**
  * Parameters can be passed as environment variables.
@@ -31,13 +32,12 @@ class PropertyDelegate<T>(
 		thisRef: Any?, property: KProperty<*>
 	): T {
 		return value ?: run {
-			// FIXME code smell
-			val defaultValue = initializer?.invoke()
-
 			val envName =
-				arrayOf(prefix, property.name).joinToString("_").replace(REGEXP_ENV_NAME_UNDERSCORE, "_$1")
-					.toUpperCase()
+				(if (prefix.isNullOrEmpty()) property.name else "${prefix}_${property.name}").replace(
+					REGEXP_ENV_NAME_UNDERSCORE, "_$1"
+				).toUpperCase()
 			logger.trace { "find environment variable '$envName'" }
+
 			val sysEnvValue: String? = when {
 				System.getProperties().containsKey(envName) -> System.getProperty(envName)
 				System.getenv().containsKey(envName) -> System.getenv()[envName]
@@ -46,22 +46,26 @@ class PropertyDelegate<T>(
 			logger.trace { "$envName=$sysEnvValue" }
 
 			@Suppress("UNCHECKED_CAST", "IMPLICIT_CAST_TO_ANY") val envValue = sysEnvValue?.let {
-				when (defaultValue) {
-					is String -> sysEnvValue
-					is Boolean -> sysEnvValue.toBoolean()
-					is Long -> sysEnvValue.toLong()
-					is Int -> sysEnvValue.toInt()
-					is Double -> sysEnvValue.toDouble()
-					is Float -> sysEnvValue.toFloat()
-					is Short -> sysEnvValue.toShort()
-					is Byte -> sysEnvValue.toByte()
+				val returnType = property.returnType.jvmErasure
+				when (returnType) {
+					String::class -> sysEnvValue
+					Boolean::class -> sysEnvValue.toBoolean()
+					Long::class -> sysEnvValue.toLong()
+					Int::class -> sysEnvValue.toInt()
+					Double::class -> sysEnvValue.toDouble()
+					Float::class -> sysEnvValue.toFloat()
+					Short::class -> sysEnvValue.toShort()
+					Byte::class -> sysEnvValue.toByte()
 					else -> throw IllegalStateException("unsupported data type from field: ${property.name}")
 				} as? T
 			}
-			if (envValue == null && defaultValue == null) {
-				throw IllegalStateException("For the field '${property.name}' value has not been found - not found an environment variable '$envName' or default")
-			}
-			setValue(thisRef, property, envValue ?: defaultValue!!)
+
+			setValue(
+				thisRef,
+				property,
+				envValue ?: initializer?.invoke()
+				?: throw IllegalStateException("For the field '${property.name}' value has not been found - not found an environment variable '$envName' or default")
+			)
 			return@run value!!
 		}
 	}
