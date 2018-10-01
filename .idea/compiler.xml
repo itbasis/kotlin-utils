@@ -2,10 +2,13 @@
 <project version="4">
   <component name="CompilerConfiguration">
     <bytecodeTargetLevel>
+      <module name="kotlin-utils-common_integrationTest" target="1.8" />
       <module name="kotlin-utils-common_main" target="1.8" />
       <module name="kotlin-utils-common_test" target="1.8" />
+      <module name="kotlin-utils-js_integrationTest" target="1.8" />
       <module name="kotlin-utils-js_main" target="1.8" />
       <module name="kotlin-utils-js_test" target="1.8" />
+      <module name="kotlin-utils-jvm_integrationTest" target="1.8" />
       <module name="kotlin-utils-jvm_main" target="1.8" />
       <module name="kotlin-utils-jvm_test" target="1.8" />
     </bytecodeTargetLevel>

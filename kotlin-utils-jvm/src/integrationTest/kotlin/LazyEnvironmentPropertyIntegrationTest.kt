@@ -4,7 +4,7 @@ import io.kotlintest.shouldBe
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.Test
 
-internal class LazyEnvironmentPropertyTest {
+internal class LazyEnvironmentPropertyIntegrationTest {
 	@AfterEach
 	internal fun tearDown() {
 		arrayOf("S", "_S", "PREFIX_S").forEach {

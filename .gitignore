@@ -22,3 +22,4 @@ tmp.*
 !.idea/compiler.xml
 !.idea/gradle.xml
 !.idea/kotlinc.xml
+!.idea/kotlinScripting.xml

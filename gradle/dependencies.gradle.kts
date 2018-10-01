@@ -1,36 +1,43 @@
 import org.gradle.plugins.ide.idea.model.IdeaModel
 
 val kotlinVersion: String by extra
+val junit5PlatformVersion: String by extra
 
 repositories {
-	mavenLocal()
-	jcenter()
-	mavenCentral()
-	maven(url = "https://jitpack.io")
+  mavenLocal()
+  jcenter()
+  mavenCentral()
+  maven(url = "https://jitpack.io")
 }
 
 configurations.all {
-	resolutionStrategy {
-		failOnVersionConflict()
+  resolutionStrategy {
+    failOnVersionConflict()
 
-		eachDependency {
-			when (requested.group) {
-				"org.jetbrains.kotlin" -> useVersion(kotlinVersion)
-				"org.slf4j" -> useVersion("1.7.25")
-				"junit" -> useVersion("4.12")
-				"io.kotlintest" -> useVersion("3.1.6")
-			}
-		}
-	}
+    eachDependency {
+      when (requested.group) {
+        "org.jetbrains.kotlin"      -> useVersion(kotlinVersion)
+        "org.slf4j"                 -> useVersion("1.7.25")
+        "junit"                     -> useVersion("4.12")
+        "io.kotlintest"             -> useVersion("3.1.6")
+        "org.junit.platform"        -> useVersion(junit5PlatformVersion)
+        """org.opentest4j"""        -> useVersion("1.1.0")
+        "org.junit.jupiter"         -> useVersion("5.2.0")
+        "com.github.lewik.klogging" -> useVersion("1.2.41")
+        "com.github.lewik"          -> useTarget("com.github.lewik.klogging:${requested.name}:${requested.version}")
+
+      }
+    }
+  }
 }
 
 apply {
-	plugin<IdeaPlugin>()
+  plugin<IdeaPlugin>()
 }
 
 configure<IdeaModel> {
-	module {
-		isDownloadJavadoc = false
-		isDownloadSources = false
-	}
+  module {
+    isDownloadJavadoc = false
+    isDownloadSources = false
+  }
 }
