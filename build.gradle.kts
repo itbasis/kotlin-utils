@@ -1,8 +1,6 @@
 import com.github.breadmoirai.GithubReleaseExtension
 import com.github.breadmoirai.GithubReleasePlugin
 import com.github.breadmoirai.GithubReleaseTask
-import com.github.jengelman.gradle.plugins.shadow.ShadowPlugin
-import com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar
 import com.gradle.scan.plugin.BuildScanExtension
 import io.gitlab.arturbosch.detekt.DetektPlugin
 import io.gitlab.arturbosch.detekt.extensions.DetektExtension
@@ -25,14 +23,13 @@ buildscript {
   repositories {
     jcenter()
     gradlePluginPortal()
+    maven(url = "https://dl.bintray.com/kotlin/kotlin-eap/")
   }
 
   dependencies {
     classpath(kotlin("gradle-plugin", kotlinVersion))
     classpath("gradle.plugin.io.gitlab.arturbosch.detekt:detekt-gradle-plugin:+")
     classpath("gradle.plugin.com.github.breadmoirai:github-release:+")
-    classpath("com.jfrog.bintray.gradle:gradle-bintray-plugin:+")
-    classpath("com.github.jengelman.gradle.plugins:shadow:+")
   }
 }
 
@@ -70,7 +67,6 @@ subprojects {
     from("$rootDir/gradle/dependencies.gradle.kts")
     plugin<BasePlugin>()
     plugin<DetektPlugin>()
-    plugin<ShadowPlugin>()
     plugin<MavenPublishPlugin>()
   }
 
