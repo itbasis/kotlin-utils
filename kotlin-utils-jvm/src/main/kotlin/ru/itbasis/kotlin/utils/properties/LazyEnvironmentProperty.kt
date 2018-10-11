@@ -1,8 +1,9 @@
-package ru.itbasis.kotlin.utils
+package ru.itbasis.kotlin.utils.properties
 
 import klogging.KLogger
 import klogging.KLoggers
 import klogging.WithLogging
+import ru.itbasis.kotlin.utils.toBoolean
 import kotlin.properties.ReadWriteProperty
 import kotlin.reflect.KProperty
 import kotlin.reflect.jvm.jvmErasure

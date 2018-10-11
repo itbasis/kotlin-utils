@@ -1,4 +1,4 @@
-package ru.itbasis.kotlin.utils
+package ru.itbasis.kotlin.utils.properties
 
 import io.kotlintest.shouldBe
 import org.junit.jupiter.api.AfterEach
