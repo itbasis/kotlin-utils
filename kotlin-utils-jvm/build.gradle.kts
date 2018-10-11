@@ -4,10 +4,10 @@ apply {
   plugin<KotlinPlatformJvmPlugin>()
 }
 
-val kloggingVersion: String by project
+val kotlinLoggingVersion: String by project
 
 dependencies {
   "implementation"(kotlin("stdlib-jdk8"))
 
-  "compile"("com.github.lewik.klogging:klogging.jvm:$kloggingVersion")
+  "compile"("io.github.microutils:kotlin-logging:$kotlinLoggingVersion")
 }

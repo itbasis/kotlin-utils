@@ -4,8 +4,8 @@ apply {
   plugin<KotlinPlatformCommonPlugin>()
 }
 
-val kloggingVersion: String by project
+val kotlinLoggingVersion: String by extra
 
 dependencies {
-  "compile"("com.github.lewik.klogging:klogging.common:$kloggingVersion")
+  "compile"("io.github.microutils:kotlin-logging-common:$kotlinLoggingVersion")
 }

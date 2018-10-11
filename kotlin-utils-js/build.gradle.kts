@@ -4,8 +4,8 @@ apply {
   plugin<KotlinPlatformJsPlugin>()
 }
 
-val kloggingVersion: String by project
+val kotlinLoggingVersion: String by project
 
 dependencies {
-  "compile"("com.github.lewik.klogging:klogging.js:$kloggingVersion")
+  "compile"("io.github.microutils:kotlin-logging-js:$kotlinLoggingVersion")
 }

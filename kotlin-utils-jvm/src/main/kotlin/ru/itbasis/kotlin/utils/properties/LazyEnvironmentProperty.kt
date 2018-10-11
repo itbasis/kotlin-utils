@@ -1,8 +1,6 @@
 package ru.itbasis.kotlin.utils.properties
 
-import klogging.KLogger
-import klogging.KLoggers
-import klogging.WithLogging
+import mu.KLogging
 import ru.itbasis.kotlin.utils.toBoolean
 import kotlin.properties.ReadWriteProperty
 import kotlin.reflect.KProperty
@@ -14,7 +12,9 @@ import kotlin.reflect.jvm.jvmErasure
  * @param security if TRUE, then the parameter is hidden when printed in the logger (See [PropertyDelegate.setValue])
  */
 fun <T> Any.lazyProperty(
-  prefix: String? = null, security: Boolean = false, defaultValue: (() -> T)? = null
+  prefix: String? = null,
+  security: Boolean = false,
+  defaultValue: (() -> T)? = null
                         ): PropertyDelegate<T> =
   PropertyDelegate(this, prefix, security, defaultValue)
 
@@ -23,15 +23,13 @@ class PropertyDelegate<T>(
   private val prefix: String? = null,
   private val security: Boolean,
   private var initializer: (() -> T)?
-                         ) : ReadWriteProperty<Any?, T>, WithLogging {
-
-  override val logger: KLogger
-    get() = KLoggers.logger(self)
+                         ) : KLogging(), ReadWriteProperty<Any?, T> {
 
   private var value: T? = null
 
   override fun getValue(
-    thisRef: Any?, property: KProperty<*>
+    thisRef: Any?,
+    property: KProperty<*>
                        ): T {
     return value ?: run {
       val envName =
@@ -75,7 +73,9 @@ class PropertyDelegate<T>(
 
   @Suppress("IMPLICIT_CAST_TO_ANY")
   override fun setValue(
-    thisRef: Any?, property: KProperty<*>, value: T
+    thisRef: Any?,
+    property: KProperty<*>,
+    value: T
                        ) {
     logger.debug { "${property.name}=${if (security) "<PROTECTED DATA>" else value}" }
     this.value = value
