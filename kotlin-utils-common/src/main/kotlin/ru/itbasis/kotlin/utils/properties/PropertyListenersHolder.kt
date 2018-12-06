@@ -3,7 +3,7 @@ package ru.itbasis.kotlin.utils.properties
 @Suppress("unused")
 abstract class PropertyListenersHolder<Event : Enum<Event>> : WithPropertyListeners<Event> {
 
-  @Suppress("PropertyName")
+  @Suppress("VariableNaming", "PropertyName")
   protected abstract val _propertyListeners: MutableMap<Event, PropertyListeners<out Any?>>
 
   fun enablePropertyListeners(

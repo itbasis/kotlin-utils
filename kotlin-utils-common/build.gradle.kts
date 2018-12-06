@@ -4,8 +4,14 @@ apply {
   plugin<KotlinPlatformCommonPlugin>()
 }
 
-val kotlinLoggingVersion: String by extra
+val kotlinVersion = rootProject.extra["kotlin.version"] as String
+val klogVersion = rootProject.extra["klog.version"] as String
 
 dependencies {
-  "compile"("io.github.microutils:kotlin-logging-common:$kotlinLoggingVersion")
+  "implementation"(kotlin("stdlib-common", kotlinVersion))
+
+  "implementation"("com.github.lewik.klog:klog-metadata:$klogVersion")
+
+  "testImplementation"(kotlin("test-common", kotlinVersion))
+  "testImplementation"(kotlin("test-annotations-common", kotlinVersion))
 }

@@ -9,7 +9,6 @@
           <set>
             <option value="$PROJECT_DIR$" />
             <option value="$PROJECT_DIR$/kotlin-utils-common" />
-            <option value="$PROJECT_DIR$/kotlin-utils-js" />
             <option value="$PROJECT_DIR$/kotlin-utils-jvm" />
           </set>
         </option>

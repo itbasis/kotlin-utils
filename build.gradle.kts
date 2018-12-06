@@ -1,11 +1,6 @@
-import com.github.breadmoirai.GithubReleaseExtension
-import com.github.breadmoirai.GithubReleasePlugin
-import com.github.breadmoirai.GithubReleaseTask
-import com.gradle.scan.plugin.BuildScanExtension
 import io.gitlab.arturbosch.detekt.DetektPlugin
 import io.gitlab.arturbosch.detekt.extensions.DetektExtension
 import org.gradle.api.publish.maven.MavenPom
-import org.jetbrains.kotlin.gradle.dsl.Coroutines
 import org.jetbrains.kotlin.gradle.dsl.KotlinProjectExtension
 import org.jetbrains.kotlin.gradle.plugin.KotlinPlatformCommonPlugin
 import org.jetbrains.kotlin.gradle.plugin.KotlinPlatformJsPlugin
@@ -16,9 +11,10 @@ import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
 import org.gradle.language.base.plugins.LifecycleBasePlugin.BUILD_TASK_NAME
 import org.gradle.language.base.plugins.LifecycleBasePlugin.ASSEMBLE_TASK_NAME
+import org.gradle.plugins.ide.idea.model.IdeaModel
 
 buildscript {
-  val kotlinVersion: String by extra
+  val kotlinVersion = extra["kotlin.version"] as String
 
   repositories {
     jcenter()
@@ -28,49 +24,61 @@ buildscript {
   dependencies {
     classpath(kotlin("gradle-plugin", kotlinVersion))
     classpath("gradle.plugin.io.gitlab.arturbosch.detekt:detekt-gradle-plugin:+")
-    classpath("gradle.plugin.com.github.breadmoirai:github-release:+")
   }
-}
-
-plugins {
-  `build-scan`
 }
 
 apply {
-  plugin<IdeaPlugin>()
   plugin<MavenPlugin>()
   plugin<MavenPublishPlugin>()
-  plugin<GithubReleasePlugin>()
 }
 
-configure<BuildScanExtension> {
-  setTermsOfServiceUrl("https://gradle.com/terms-of-service")
-  setTermsOfServiceAgree("yes")
+version = when (version) {
+  "unspecified" -> rootDir.resolve("versions.txt").readLines().first().substringAfter("=")
+  else          -> version
+}
 
-  if (!java.lang.System.getenv("CI").isNullOrEmpty()) {
-    publishAlways()
-    tag("CI")
+allprojects {
+  group = "ru.itbasis.kotlin.utils"
+
+  apply {
+    plugin<IdeaPlugin>()
+  }
+
+  configure<IdeaModel> {
+    module {
+      isDownloadJavadoc = false
+      isDownloadSources = false
+    }
+  }
+
+  repositories {
+    mavenLocal()
+    jcenter()
+    maven(url = "https://jitpack.io")
+  }
+
+  configurations.all {
+    resolutionStrategy {
+      failOnVersionConflict()
+
+      eachDependency {
+        when (requested.group) {
+          "org.jetbrains.kotlin" -> useVersion(extra["kotlin.version"] as String)
+          "org.junit.jupiter"    -> useVersion(extra["junit.jupiter.version"] as String)
+          "org.junit.platform"   -> useVersion(extra["junit.platform.version"] as String)
+        }
+      }
+    }
   }
 }
-
-group = "ru.itbasis.kotlin.utils"
-version =
-  if (version != "unspecified") version else file("versions.txt").readLines().first().substringAfter(
-    "="
-                                                                                                    )
 
 subprojects {
   version = rootProject.version
 
   apply {
-    from("$rootDir/gradle/dependencies.gradle.kts")
     plugin<BasePlugin>()
     plugin<DetektPlugin>()
     plugin<MavenPublishPlugin>()
-  }
-
-  configure<DetektExtension> {
-    config = files(rootDir.resolve("detekt-config.yml"))
   }
 
   afterEvaluate {
@@ -85,74 +93,6 @@ subprojects {
         jvmTarget = JavaVersion.VERSION_1_8.toString()
       }
     }
-
-    plugins.withType(KotlinPlatformPluginBase::class.java) {
-      configure<KotlinProjectExtension> {
-        experimental.coroutines = Coroutines.ENABLE
-      }
-
-      fun MavenPom.addDependencies() = withXml {
-        asNode().appendNode("dependencies").let { depNode ->
-          listOf(
-            configurations[JavaPlugin.COMPILE_CONFIGURATION_NAME].allDependencies
-//            ,
-//            configurations[JavaPlugin.IMPLEMENTATION_CONFIGURATION_NAME].allDependencies
-                ).flatten().toSet().forEach {
-            println("dependency: $it")
-            depNode.appendNode("dependency").apply {
-              appendNode("groupId", it.group)
-              appendNode("artifactId", it.name)
-              appendNode("version", it.version)
-            }
-          }
-        }
-      }
-
-      rootProject.configure<PublishingExtension> {
-        publications {
-          create(project.name, MavenPublication::class.java) {
-            artifactId = project.name
-            from(project.components["java"])
-//            pom.addDependencies()
-          }
-        }
-      }
-    }
-    plugins.withType(KotlinPlatformCommonPlugin::class.java) {
-      dependencies {
-        "implementation"(kotlin("stdlib-common"))
-
-        arrayOf(kotlin("test-common"), kotlin("test-annotations-common")).forEach {
-          "testImplementation"(it)
-        }
-      }
-    }
-    plugins.withType(KotlinPlatformJvmPlugin::class.java) {
-      dependencies {
-        "implementation"(kotlin("stdlib-jdk8"))
-        "implementation"(kotlin("reflect"))
-
-        arrayOf(
-          "org.slf4j:slf4j-simple",
-          kotlin("test-junit5"),
-          "io.kotlintest:kotlintest-extensions-system",
-          "io.kotlintest:kotlintest-assertions-arrow",
-          "io.kotlintest:kotlintest-runner-junit5",
-          "org.junit.jupiter:junit-jupiter-params",
-          "org.junit.jupiter:junit-jupiter-engine"
-               ).forEach {
-          "testImplementation"(it)
-        }
-      }
-    }
-    plugins.withType(KotlinPlatformJsPlugin::class.java) {
-      dependencies {
-        "implementation"(kotlin("stdlib-js"))
-
-        "testImplementation"(kotlin("test-js"))
-      }
-    }
-
     tasks.withType(Test::class.java).all {
       failFast = true
       useJUnitPlatform {
@@ -162,14 +102,18 @@ subprojects {
         showStandardStreams = true
       }
     }
+
+    rootProject.configure<PublishingExtension> {
+      publications {
+        create(project.name, MavenPublication::class.java) {
+          artifactId = project.name
+          from(project.components["java"])
+        }
+      }
+    }
   }
 
   rootProject.tasks[BUILD_TASK_NAME].shouldRunAfter(tasks[BUILD_TASK_NAME])
-}
-
-configure<GithubReleaseExtension> {
-  if (hasProperty("githubToken")) setToken(findProperty("githubToken") as String)
-  setOwner("itbasis")
 }
 
 tasks.create("generateAllPomFiles") {
@@ -195,7 +139,4 @@ tasks[BUILD_TASK_NAME].apply {
       }
     }
   }
-}
-tasks.withType(GithubReleaseTask::class.java) {
-  //  setReleaseAssets(buildDir.resolve("libs").listFiles())
 }
