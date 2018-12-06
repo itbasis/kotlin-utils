@@ -11,10 +11,10 @@ val slf4jVersion = extra["slf4j.version"] as String
 val junitJupiterVersion = extra["junit.jupiter.version"] as String
 
 dependencies {
-  "implementation"(kotlin("stdlib-jdk8", kotlinVersion))
-  "implementation"(kotlin("reflect", kotlinVersion))
+  "compile"(kotlin("stdlib-jdk8", kotlinVersion))
+  "compile"(kotlin("reflect", kotlinVersion))
 
-  "implementation"("com.github.lewik.klog:klog-jvm:$klogVersion")
+  "compile"("com.github.lewik.klog:klog-jvm:$klogVersion")
 
   "testImplementation"("org.slf4j:slf4j-simple:$slf4jVersion")
   "testImplementation"(kotlin("test-junit5", kotlinVersion))
